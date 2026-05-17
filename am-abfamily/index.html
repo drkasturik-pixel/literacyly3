@@ -1,0 +1,231 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Word Family Game</title>
+
+<style>
+body {
+    margin:0;
+    font-family: Arial;
+    background:#f5f0ff;
+    text-align:center;
+}
+
+.top-bar {
+    padding:10px;
+    background:#d1c4e9;
+    font-size:18px;
+    font-weight:bold;
+}
+
+.screen {
+    display:none;
+    height:100vh;
+    justify-content:center;
+    align-items:center;
+    flex-direction:column;
+}
+
+.active { display:flex; }
+
+#logo img {
+    width:150px;
+}
+
+.game-container {
+    display:flex;
+    justify-content:space-between;
+    width:90%;
+    margin:auto;
+}
+
+.left {
+    width:45%;
+}
+
+.left img {
+    width:150px;
+}
+
+.word {
+    font-size:32px;
+    margin-top:10px;
+}
+
+.right {
+    width:45%;
+    display:flex;
+    flex-direction:column;
+    justify-content:center;
+}
+
+.option {
+    padding:20px;
+    margin:10px;
+    font-size:28px;
+    border-radius:15px;
+    background:#ffe082;
+    border:none;
+    cursor:pointer;
+}
+
+.option:nth-child(2){ background:#ffccbc;}
+.option:nth-child(3){ background:#c8e6c9;}
+
+.feedback {
+    font-size:50px;
+}
+
+button {
+    padding:15px;
+    margin-top:10px;
+    font-size:18px;
+}
+</style>
+</head>
+
+<body>
+
+<div class="top-bar">
+Look at the picture. Listen to the word. Tap the correct starting letter.
+</div>
+
+<!-- INTRO SCREEN -->
+<div id="intro" class="screen active">
+    <img src="assets/innovine-logo.png">
+    <h2>Get ready to play the Word Family Game!</h2>
+</div>
+
+<!-- GAME SCREEN -->
+<div id="game" class="screen">
+    <div class="game-container">
+        <div class="left">
+            <img id="image">
+            <div id="word" class="word"></div>
+        </div>
+        <div class="right" id="options"></div>
+    </div>
+    <div id="feedback" class="feedback"></div>
+</div>
+
+<!-- END SCREEN -->
+<div id="end" class="screen">
+    <h2 id="scoreText"></h2>
+    <h3>🎉 Great Job!</h3>
+    <button onclick="restart()">🔄 Replay Game</button>
+    <button onclick="playInstruction()">🔊 Replay Instructions</button>
+</div>
+
+<!-- AUDIO -->
+<audio id="correctSound" src="assets/correct.mp3"></audio>
+<audio id="wrongSound" src="assets/wrong.mp3"></audio>
+<audio id="bgMusic" src="assets/background-music.mp3" loop></audio>
+
+<script>
+const questions = [
+{word:"jam", img:"assets/jam.png", correct:"j", options:["j","d","f"]},
+{word:"cab", img:"assets/cab.png", correct:"c", options:["c","l","t"]},
+{word:"dam", img:"assets/dam.png", correct:"d", options:["d","c","r"]},
+{word:"crab", img:"assets/crab.png", correct:"c", options:["c","t","n"]},
+{word:"cam", img:"assets/cam.png", correct:"c", options:["c","r","h"]},
+{word:"lab", img:"assets/lab.png", correct:"l", options:["l","c","t"]},
+{word:"ram", img:"assets/ram.png", correct:"r", options:["r","h","c"]},
+{word:"tab", img:"assets/tab.png", correct:"t", options:["t","d","r"]},
+{word:"ham", img:"assets/ham.png", correct:"h", options:["h","j","n"]},
+{word:"dab", img:"assets/dab.png", correct:"d", options:["d","c","t"]}
+];
+
+let current = 0;
+let score = 0;
+
+function speak(text){
+    let msg = new SpeechSynthesisUtterance(text);
+    speechSynthesis.speak(msg);
+}
+
+function playInstruction(){
+    speak("Look at the picture. Listen to the word. Tap the correct starting letter.");
+}
+
+function showGame(){
+    document.getElementById("intro").classList.remove("active");
+    document.getElementById("game").classList.add("active");
+
+    playInstruction();
+
+    setTimeout(()=>{
+        document.getElementById("bgMusic").volume = 0.2;
+        document.getElementById("bgMusic").play();
+    },4000);
+
+    loadQuestion();
+}
+
+function loadQuestion(){
+    let q = questions[current];
+
+    document.getElementById("image").src = q.img;
+    document.getElementById("word").innerText = q.word;
+
+    speak(q.word);
+
+    let optionsDiv = document.getElementById("options");
+    optionsDiv.innerHTML = "";
+
+    q.options.forEach(opt=>{
+        let btn = document.createElement("button");
+        btn.className = "option";
+        btn.innerText = opt;
+        btn.onclick = ()=>checkAnswer(opt);
+        optionsDiv.appendChild(btn);
+    });
+}
+
+function checkAnswer(ans){
+    let q = questions[current];
+    let feedback = document.getElementById("feedback");
+
+    if(ans === q.correct){
+        document.getElementById("correctSound").play();
+        feedback.innerText = "👏";
+        score++;
+    } else {
+        document.getElementById("wrongSound").play();
+        feedback.innerText = "❌";
+    }
+
+    setTimeout(()=>{
+        feedback.innerText="";
+        current++;
+
+        if(current < questions.length){
+            loadQuestion();
+        } else {
+            showEnd();
+        }
+    },1000);
+}
+
+function showEnd(){
+    document.getElementById("game").classList.remove("active");
+    document.getElementById("end").classList.add("active");
+    document.getElementById("scoreText").innerText = "⭐ Score: " + score + "/10";
+}
+
+function restart(){
+    current = 0;
+    score = 0;
+    document.getElementById("end").classList.remove("active");
+    document.getElementById("game").classList.add("active");
+    loadQuestion();
+}
+
+// START AFTER 5 SEC
+setTimeout(showGame,5000);
+
+</script>
+
+</body>
+</html>
