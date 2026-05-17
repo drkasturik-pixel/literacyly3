@@ -15,7 +15,13 @@ body { margin:0; font-family:Arial; background:#f5f0ff; text-align:center; }
     font-weight:bold;
 }
 
-.screen { display:none; height:100vh; justify-content:center; align-items:center; flex-direction:column; }
+.screen {
+    display:none;
+    height:100vh;
+    justify-content:center;
+    align-items:center;
+    flex-direction:column;
+}
 .active { display:flex; }
 
 .game-container {
@@ -43,7 +49,7 @@ body { margin:0; font-family:Arial; background:#f5f0ff; text-align:center; }
 .option:nth-child(3){background:#c8e6c9;}
 
 .feedback { font-size:40px; margin-top:10px; }
-.wordReveal { font-size:32px; margin-top:10px; color:#5e35b1; }
+button { padding:12px 20px; font-size:16px; margin-top:10px; }
 </style>
 </head>
 
@@ -64,7 +70,6 @@ Look at the picture. Listen to the word. Tap the correct starting letter.
     <div class="game-container">
         <div class="left">
             <img id="image" src="">
-            <div id="wordReveal" class="wordReveal"></div>
         </div>
         <div id="options"></div>
     </div>
@@ -75,7 +80,7 @@ Look at the picture. Listen to the word. Tap the correct starting letter.
 <div id="end" class="screen">
     <h2 id="scoreText"></h2>
     <h3>🎉 Great Job!</h3>
-    <button onclick="restart()">Replay</button>
+    <button onclick="restart()">🔄 Replay</button>
 </div>
 
 <!-- AUDIO -->
@@ -100,15 +105,27 @@ const questions = [
 let current = 0;
 let score = 0;
 let musicStarted = false;
+let locked = false;
 
 // 🔊 SPEAK FUNCTION
-function speak(text){
+function speak(text, rate=0.8){
     let msg = new SpeechSynthesisUtterance(text);
-    msg.rate = 0.8;
+    msg.rate = rate;
     speechSynthesis.speak(msg);
 }
 
-// 🎵 START MUSIC SAFELY
+// 🧠 PHONICS BREAKDOWN
+function speakPhonics(word){
+    let first = word.charAt(0);
+    let family = word.slice(1);
+
+    speak(first, 0.6);
+
+    setTimeout(()=>{ speak(family, 0.6); },700);
+    setTimeout(()=>{ speak(word, 0.8); },1400);
+}
+
+// 🎵 START MUSIC
 function startMusic(){
     if(!musicStarted){
         let music = document.getElementById("bgMusic");
@@ -126,24 +143,22 @@ function showGame(){
     speak("Look at the picture. Listen to the word. Tap the correct starting letter.");
 
     setTimeout(loadQuestion, 3000);
-
-    // fallback autoplay attempt
     setTimeout(startMusic, 3500);
 }
 
 // 📌 LOAD QUESTION
 function loadQuestion(){
+    locked = false;
+
     let q = questions[current];
 
     let img = document.getElementById("image");
-
-    // safer image loading
     img.src = "";
     setTimeout(()=>{ img.src = q.img; },100);
 
-    document.getElementById("wordReveal").innerText = "";
-
+    // 🔊 SAY WORD + PHONICS
     speak(q.word);
+    setTimeout(()=>{ speakPhonics(q.word); },1000);
 
     let optionsDiv = document.getElementById("options");
     optionsDiv.innerHTML = "";
@@ -154,8 +169,10 @@ function loadQuestion(){
         btn.innerText = opt;
 
         btn.onclick = ()=>{
-            startMusic(); // required for mobile
-            checkAnswer(opt);
+            if(!locked){
+                startMusic();
+                checkAnswer(opt);
+            }
         };
 
         optionsDiv.appendChild(btn);
@@ -168,31 +185,40 @@ function checkAnswer(ans){
     let feedback = document.getElementById("feedback");
 
     if(ans === q.correct){
+        locked = true;
+
         document.getElementById("correctSound").play();
         feedback.innerText = "👏";
 
-        // show word only after correct
-        document.getElementById("wordReveal").innerText = q.word;
-
         score++;
+
+        setTimeout(()=>{
+            feedback.innerText="";
+            current++;
+
+            if(current < questions.length){
+                loadQuestion();
+            } else {
+                showEnd();
+            }
+        },1500);
+
     } else {
         document.getElementById("wrongSound").play();
         feedback.innerText = "❌";
+
+        // 🔊 TRY AGAIN VOICE
+        setTimeout(()=>{
+            speak("Try again", 0.8);
+        },600);
+
+        setTimeout(()=>{
+            feedback.innerText="";
+        },1200);
     }
-
-    setTimeout(()=>{
-        feedback.innerText="";
-        current++;
-
-        if(current < questions.length){
-            loadQuestion();
-        } else {
-            showEnd();
-        }
-    },1500);
 }
 
-// 🏁 END SCREEN
+// 🏁 END
 function showEnd(){
     document.getElementById("game").classList.remove("active");
     document.getElementById("end").classList.add("active");
@@ -208,7 +234,7 @@ function restart(){
     loadQuestion();
 }
 
-// ⏳ INTRO TIMER
+// ⏳ START AFTER 5 SEC
 setTimeout(showGame, 5000);
 </script>
 
