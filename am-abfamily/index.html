@@ -6,7 +6,12 @@
 <title>Word Family Game</title>
 
 <style>
-body { margin:0; font-family:Arial; background:#f5f0ff; text-align:center; }
+body {
+    margin:0;
+    font-family:Arial;
+    background:#f5f0ff;
+    text-align:center;
+}
 
 .top-bar {
     padding:10px;
@@ -22,18 +27,36 @@ body { margin:0; font-family:Arial; background:#f5f0ff; text-align:center; }
     align-items:center;
     flex-direction:column;
 }
-.active { display:flex; }
+
+.active {
+    display:flex;
+}
 
 .game-container {
     display:flex;
     justify-content:space-around;
+    align-items:center;
     width:90%;
+}
+
+.left {
+    display:flex;
+    flex-direction:column;
+    align-items:center;
 }
 
 .left img {
     width:150px;
     height:150px;
     object-fit:contain;
+}
+
+.word-display {
+    margin-top:15px;
+    font-size:40px;
+    font-weight:bold;
+    color:#5e35b1;
+    min-height:50px;
 }
 
 .option {
@@ -45,11 +68,25 @@ body { margin:0; font-family:Arial; background:#f5f0ff; text-align:center; }
     cursor:pointer;
     background:#ffe082;
 }
-.option:nth-child(2){background:#ffccbc;}
-.option:nth-child(3){background:#c8e6c9;}
 
-.feedback { font-size:40px; margin-top:10px; }
-button { padding:12px 20px; font-size:16px; margin-top:10px; }
+.option:nth-child(2){
+    background:#ffccbc;
+}
+
+.option:nth-child(3){
+    background:#c8e6c9;
+}
+
+.feedback {
+    font-size:40px;
+    margin-top:10px;
+}
+
+button {
+    padding:12px 20px;
+    font-size:16px;
+    margin-top:10px;
+}
 </style>
 </head>
 
@@ -67,13 +104,22 @@ Look at the picture. Listen to the word. Tap the correct starting letter.
 
 <!-- GAME -->
 <div id="game" class="screen">
+
     <div class="game-container">
+
         <div class="left">
             <img id="image" src="">
+            
+            <!-- WORD APPEARS HERE -->
+            <div id="wordDisplay" class="word-display"></div>
         </div>
+
         <div id="options"></div>
+
     </div>
+
     <div id="feedback" class="feedback"></div>
+
 </div>
 
 <!-- END -->
@@ -89,18 +135,19 @@ Look at the picture. Listen to the word. Tap the correct starting letter.
 <audio id="bgMusic" src="assets/background-music.mp3" loop></audio>
 
 <script>
+
 // ✅ FIXED ORDER (NO SHUFFLE)
 const questions = [
-{word:"jam", img:"assets/jam.png", correct:"j", options:["d","j","f"]},   // 2nd
-{word:"cab", img:"assets/cab.png", correct:"c", options:["c","l","t"]},   // 1st
-{word:"dam", img:"assets/dam.png", correct:"d", options:["c","r","d"]},   // 3rd
-{word:"crab", img:"assets/crab.png", correct:"c", options:["t","c","n"]}, // 2nd
-{word:"cam", img:"assets/cam.png", correct:"c", options:["c","r","h"]},   // 1st
-{word:"lab", img:"assets/lab.png", correct:"l", options:["c","t","l"]},   // 3rd
-{word:"ram", img:"assets/ram.png", correct:"r", options:["h","r","c"]},   // 2nd
-{word:"tab", img:"assets/tab.png", correct:"t", options:["t","d","r"]},   // 1st
-{word:"ham", img:"assets/ham.png", correct:"h", options:["j","n","h"]},   // 3rd
-{word:"dab", img:"assets/dab.png", correct:"d", options:["d","c","t"]}    // 1st
+{word:"jam", img:"assets/jam.png", correct:"j", options:["d","j","f"]},
+{word:"cab", img:"assets/cab.png", correct:"c", options:["c","l","t"]},
+{word:"dam", img:"assets/dam.png", correct:"d", options:["c","r","d"]},
+{word:"crab", img:"assets/crab.png", correct:"c", options:["t","c","n"]},
+{word:"cam", img:"assets/cam.png", correct:"c", options:["c","r","h"]},
+{word:"lab", img:"assets/lab.png", correct:"l", options:["c","t","l"]},
+{word:"ram", img:"assets/ram.png", correct:"r", options:["h","r","c"]},
+{word:"tab", img:"assets/tab.png", correct:"t", options:["t","d","r"]},
+{word:"ham", img:"assets/ham.png", correct:"h", options:["j","n","h"]},
+{word:"dab", img:"assets/dab.png", correct:"d", options:["d","c","t"]}
 ];
 
 let current = 0;
@@ -117,26 +164,39 @@ function speak(text, rate=0.8){
 
 // 🧠 PHONICS
 function speakPhonics(word){
+
     let first = word.charAt(0);
     let family = word.slice(1);
 
     speak(first, 0.6);
-    setTimeout(()=>{ speak(family, 0.6); },700);
-    setTimeout(()=>{ speak(word, 0.8); },1400);
+
+    setTimeout(()=>{
+        speak(family, 0.6);
+    },700);
+
+    setTimeout(()=>{
+        speak(word, 0.8);
+    },1400);
 }
 
 // 🎵 MUSIC
 function startMusic(){
+
     if(!musicStarted){
+
         let music = document.getElementById("bgMusic");
+
         music.volume = 0.2;
+
         music.play().catch(()=>{});
+
         musicStarted = true;
     }
 }
 
 // 🎬 START
 function showGame(){
+
     document.getElementById("intro").classList.remove("active");
     document.getElementById("game").classList.add("active");
 
@@ -148,28 +208,46 @@ function showGame(){
 
 // 📌 LOAD
 function loadQuestion(){
+
     locked = false;
 
     let q = questions[current];
 
     let img = document.getElementById("image");
+
     img.src = "";
-    setTimeout(()=>{ img.src = q.img; },100);
+
+    // CLEAR WORD DISPLAY FOR NEW QUESTION
+    document.getElementById("wordDisplay").innerText = "";
+
+    setTimeout(()=>{
+        img.src = q.img;
+    },100);
 
     speak(q.word);
-    setTimeout(()=>{ speakPhonics(q.word); },1000);
+
+    setTimeout(()=>{
+        speakPhonics(q.word);
+    },1000);
 
     let optionsDiv = document.getElementById("options");
+
     optionsDiv.innerHTML = "";
 
     q.options.forEach(opt=>{
+
         let btn = document.createElement("button");
+
         btn.className = "option";
+
         btn.innerText = opt;
 
         btn.onclick = ()=>{
+
             if(!locked){
+
                 startMusic();
+
                 checkAnswer(opt);
             }
         };
@@ -180,30 +258,50 @@ function loadQuestion(){
 
 // ✅ CHECK
 function checkAnswer(ans){
+
     let q = questions[current];
+
     let feedback = document.getElementById("feedback");
 
     if(ans === q.correct){
+
         locked = true;
 
         document.getElementById("correctSound").play();
+
         feedback.innerText = "👏";
+
+        // ✅ SHOW ENTIRE WORD
+        document.getElementById("wordDisplay").innerText = q.word;
+
+        // ✅ SPEAK ENTIRE WORD AGAIN
+        setTimeout(()=>{
+            speak(q.word, 0.8);
+        },300);
 
         score++;
 
         setTimeout(()=>{
-            feedback.innerText="";
+
+            feedback.innerText = "";
+
             current++;
 
             if(current < questions.length){
+
                 loadQuestion();
+
             } else {
+
                 showEnd();
             }
-        },1500);
+
+        },2000);
 
     } else {
+
         document.getElementById("wrongSound").play();
+
         feedback.innerText = "❌";
 
         setTimeout(()=>{
@@ -211,28 +309,38 @@ function checkAnswer(ans){
         },600);
 
         setTimeout(()=>{
-            feedback.innerText="";
+            feedback.innerText = "";
         },1200);
     }
 }
 
 // 🏁 END
 function showEnd(){
+
     document.getElementById("game").classList.remove("active");
+
     document.getElementById("end").classList.add("active");
+
     document.getElementById("scoreText").innerText = "⭐ Score: " + score + "/10";
 }
 
 // 🔁 RESTART
 function restart(){
+
     current = 0;
     score = 0;
+
+    document.getElementById("wordDisplay").innerText = "";
+
     document.getElementById("end").classList.remove("active");
+
     document.getElementById("game").classList.add("active");
+
     loadQuestion();
 }
 
 setTimeout(showGame, 5000);
+
 </script>
 
 </body>
