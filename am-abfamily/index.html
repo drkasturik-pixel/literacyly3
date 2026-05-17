@@ -89,32 +89,24 @@ Look at the picture. Listen to the word. Tap the correct starting letter.
 <audio id="bgMusic" src="assets/background-music.mp3" loop></audio>
 
 <script>
+// ✅ FIXED ORDER (NO SHUFFLE)
 const questions = [
-{word:"jam", img:"assets/jam.png", correct:"j", options:["j","d","f"]},
-{word:"cab", img:"assets/cab.png", correct:"c", options:["c","l","t"]},
-{word:"dam", img:"assets/dam.png", correct:"d", options:["d","c","r"]},
-{word:"crab", img:"assets/crab.png", correct:"c", options:["c","t","n"]},
-{word:"cam", img:"assets/cam.png", correct:"c", options:["c","r","h"]},
-{word:"lab", img:"assets/lab.png", correct:"l", options:["l","c","t"]},
-{word:"ram", img:"assets/ram.png", correct:"r", options:["r","h","c"]},
-{word:"tab", img:"assets/tab.png", correct:"t", options:["t","d","r"]},
-{word:"ham", img:"assets/ham.png", correct:"h", options:["h","j","n"]},
-{word:"dab", img:"assets/dab.png", correct:"d", options:["d","c","t"]}
+{word:"jam", img:"assets/jam.png", correct:"j", options:["d","j","f"]},   // 2nd
+{word:"cab", img:"assets/cab.png", correct:"c", options:["c","l","t"]},   // 1st
+{word:"dam", img:"assets/dam.png", correct:"d", options:["c","r","d"]},   // 3rd
+{word:"crab", img:"assets/crab.png", correct:"c", options:["t","c","n"]}, // 2nd
+{word:"cam", img:"assets/cam.png", correct:"c", options:["c","r","h"]},   // 1st
+{word:"lab", img:"assets/lab.png", correct:"l", options:["c","t","l"]},   // 3rd
+{word:"ram", img:"assets/ram.png", correct:"r", options:["h","r","c"]},   // 2nd
+{word:"tab", img:"assets/tab.png", correct:"t", options:["t","d","r"]},   // 1st
+{word:"ham", img:"assets/ham.png", correct:"h", options:["j","n","h"]},   // 3rd
+{word:"dab", img:"assets/dab.png", correct:"d", options:["d","c","t"]}    // 1st
 ];
 
 let current = 0;
 let score = 0;
 let musicStarted = false;
 let locked = false;
-
-// 🔀 SHUFFLE FUNCTION
-function shuffleArray(array){
-    for (let i = array.length - 1; i > 0; i--){
-        let j = Math.floor(Math.random() * (i + 1));
-        [array[i], array[j]] = [array[j], array[i]];
-    }
-    return array;
-}
 
 // 🔊 SPEAK
 function speak(text, rate=0.8){
@@ -154,7 +146,7 @@ function showGame(){
     setTimeout(startMusic, 3500);
 }
 
-// 📌 LOAD QUESTION
+// 📌 LOAD
 function loadQuestion(){
     locked = false;
 
@@ -170,10 +162,7 @@ function loadQuestion(){
     let optionsDiv = document.getElementById("options");
     optionsDiv.innerHTML = "";
 
-    // 🔀 SHUFFLE OPTIONS HERE
-    let shuffledOptions = shuffleArray([...q.options]);
-
-    shuffledOptions.forEach(opt=>{
+    q.options.forEach(opt=>{
         let btn = document.createElement("button");
         btn.className = "option";
         btn.innerText = opt;
